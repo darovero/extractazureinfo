@@ -32,25 +32,25 @@ jobs:
       ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}"-outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}"'
       azurePowerShellVersion: LatestVersion
 
-  - task: AzurePowerShell@5
-    displayName: 'Get Key Vault Info'
-    inputs:
-      azureSubscription: $(azureSubscription)
-      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/upload_to_blob.ps1'
-      ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -storageContainerName "$(storageContainerName)"  -outputFileName ${{parameters.outputFileName}} -storageAccountName "$(storageAccountName)" -storageAccountAccessKey "$(storageAccountAccessKey)"'
-      azurePowerShellVersion: LatestVersion
-
   # - task: AzurePowerShell@5
-  #   displayName: 'Upload File to Azure Blob Storage'
+  #   displayName: 'Get Key Vault Info'
   #   inputs:
   #     azureSubscription: $(azureSubscription)
-  #     ScriptType: 'InlineScript'
-  #     Inline: |
-  #       $filePath = "${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
-  #       $blobName = '${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}'
+  #     ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/upload_to_blob.ps1'
+  #     ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -storageContainerName "$(storageContainerName)"  -outputFileName ${{parameters.outputFileName}} -storageAccountName "$(storageAccountName)" -storageAccountAccessKey "$(storageAccountAccessKey)"'
+  #     azurePowerShellVersion: LatestVersion
 
-  #       $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $(storageAccountAccessKey)
-  #       Set-AzStorageBlobContent -Context $storageContext -Container $(storageContainerName) -File $filePath -Blob $blobName -Force
+  - task: AzurePowerShell@5
+    displayName: 'Upload File to Azure Blob Storage'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      ScriptType: 'InlineScript'
+      Inline: |
+        $filePath = "${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
+        $blobName = '${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}'
 
-  #     azurePowerShellVersion: 'LatestVersion'
+        $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $(storageAccountAccessKey)
+        Set-AzStorageBlobContent -Context $storageContext -Container $(storageContainerName) -File $filePath -Blob $blobName -Force
+
+      azurePowerShellVersion: 'LatestVersion'
 
