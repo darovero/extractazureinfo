@@ -57,5 +57,5 @@ $($keys | Select-Object VaultName,Name,KeyType,KeySize,Version,Id,Enabled,Create
 }
 
 # Export the information to a text file
-$ExportFilePath = "$(Agent.BuildDirectory)/$resourcegroup_$outputFilePath"
-$ExportContent | Out-File -FilePath $ExportFilePath -Encoding UTF8
+#$ExportFilePath = "$(Agent.BuildDirectory)/$resourcegroup_$outputFilePath"
+$ExportContent | Out-File -FilePath $outputFilePath -Encoding UTF8

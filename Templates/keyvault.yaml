@@ -29,7 +29,7 @@ jobs:
     inputs:
       azureSubscription: $(azureSubscription)
       ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/key_vault_info.ps1'
-      ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}"-outputFilePath "${{parameters.outputFileName}}"'
+      ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}"-outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}"'
       azurePowerShellVersion: LatestVersion
 
   - task: AzurePowerShell@5
