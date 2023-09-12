@@ -3,6 +3,7 @@ param(
     [string]$containerName,
     [string]$blobName,
     [string]$storageAccountName,
+    [string]$outputFileName,
     [string]$storageAccountKey
 )
 
@@ -11,7 +12,7 @@ if (-not (Get-Module -Name Az.Storage -ListAvailable)) {
 }
 $context = New-AzStorageContext -StorageAccountName $storageAccountName -StorageAccountKey $storageAccountKey
 
-$localFilePath = "Resources_$resourceGroup.csv"
+$localFilePath = "$resourceGroup_outputFileName"
 
 Set-AzStorageBlobContent -Context $context -Container $containerName -File $localFilePath -Blob $blobName -Force
 
