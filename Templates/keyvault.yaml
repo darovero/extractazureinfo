@@ -28,7 +28,7 @@ jobs:
     displayName: 'Get Key Vault Info'
     inputs:
       azureSubscription: $(azureSubscription)
-      ScriptPath: '$(Build.SourcesDirectory)/Scripts/key_vault_info.ps1'
+      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/key_vault_info.ps1'
       ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}"-outputFilePath "${{parameters.outputFileName}}"'
       azurePowerShellVersion: LatestVersion
 
