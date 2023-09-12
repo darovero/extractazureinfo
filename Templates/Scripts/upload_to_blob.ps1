@@ -4,7 +4,7 @@ param(
     [string]$blobName,
     [string]$outputFileName,
     [string]$storageContainerName,
-    [string]$storageAccountKey
+    [string]$storageAccountAccessKey
 )
 
 if (-not (Get-Module -Name Az.Storage -ListAvailable)) {
