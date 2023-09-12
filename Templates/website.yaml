@@ -1,0 +1,108 @@
+parameters:
+- name: outputFileName
+  default: "WebSite.txt"
+- name: ContainerFolder
+  default: "websiteinfo"
+- name: azureSubscription
+  type: string
+- name: resourcegroup
+  type: string
+- name: storageAccountName
+  type: string
+- name: storageAccountAccessKey
+  type: string
+- name: storageContainerName
+  type: string
+- name: FullProcess
+  type: boolean
+- name: WebSite
+
+jobs:
+- job: GetWebSiteInfo
+  condition: ${{ or(eq(parameters.FullProcess, true), eq(parameters.WebSite, true)) }}
+  steps:
+  
+  - template: Modules/azurepowershell.yaml
+    parameters:
+      outputFileName: "WebSite.txt"  
+
+  - task: AzurePowerShell@5
+    displayName: 'Get Web Site Info'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      ScriptType: 'InlineScript'
+      Inline: |
+        $resourcegroup = "${{parameters.resourcegroup}}"
+        
+        # Get Web Site in Resource Group
+        $website = Get-AzResource -ResourceGroupName $resourcegroup -ResourceType Microsoft.Web/sites
+
+        # Initialize content variable
+        $ExportContent = ""
+
+        # Loop through each Web Site
+        foreach ($web in $website) {
+            $webName = $web.Name
+
+            # Get Properties
+            $properties = Get-AzWebApp -ResourceGroupName $resourcegroup -Name $webName
+
+            # Tags
+            $tags = $properties.Tags
+
+            # SiteConfig
+            $siteconfig = $properties.SiteConfig
+
+            # AppSettings
+            $appsettings = $properties.SiteConfig.AppSettings
+
+            # VirtualApplications
+            $virtualapplications = $properties.SiteConfig.VirtualApplications
+
+            # Cors
+            $cors = $properties.SiteConfig.Cors            
+
+            # Append information to ExportContent
+            $ExportContent += @"
+        Web Site: $webName
+
+        Properties:
+        $($Properties | Select-Object -ExcludeProperty Tags,SiteConfig | Format-List | Out-String -Width 4096)
+
+        Tags:
+        $($tags | Format-List | Out-String -Width 4096)
+               
+        SiteConfig:
+        $($SiteConfig | Select-Object -ExcludeProperty DefaultDocuments,AppSettings,VirtualApplications,Experiments,Cors | Format-List | Out-String -Width 4096)        
+
+        AppSettings:
+        $($appsettings | Format-List | Out-String -Width 4096)
+
+        VirtualApplications:
+        $($virtualapplications | Format-List | Out-String -Width 4096)
+
+        Cors:
+        $($Cors | Format-List | Out-String -Width 4096)        
+
+        "@
+        }
+
+        # Export the information to a text file
+        $ExportFilePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
+        $ExportContent | Out-File -FilePath $ExportFilePath -Encoding UTF8
+
+      azurePowerShellVersion: 'LatestVersion'
+
+  - task: AzurePowerShell@5
+    displayName: 'Upload File to Azure Blob Storage'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      ScriptType: 'InlineScript'
+      Inline: |
+        $filePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
+        $blobName = '${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}'
+        
+        $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $(storageAccountAccessKey)
+        Set-AzStorageBlobContent -Context $storageContext -Container $(storageContainerName) -File $filePath -Blob $blobName -Force
+
+      azurePowerShellVersion: 'LatestVersion'

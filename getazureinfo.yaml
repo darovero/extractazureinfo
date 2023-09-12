@@ -1,0 +1,94 @@
+trigger:
+- none
+
+pool:
+  vmImage: 'windows-latest'
+
+parameters:
+- name: resourcegroup
+  displayName: 'Resource Group Name'
+  type: string
+- name: environment
+  displayName: 'Environment'
+  type: string
+  values:
+  - 'Non-Prod'
+  - 'Prod'
+- name: FullProcess
+  displayName: 'Trigger the whole Procesos'
+  type: boolean
+  default: false
+- name: KeyVault
+  displayName: 'Key Vault Info'
+  type: boolean
+  default: false
+- name: AppServicePlan
+  displayName: 'App Service Plan Info'
+  type: boolean
+  default: false
+- name: FunctionApp
+  displayName: 'Function App Info'
+  type: boolean
+  default: false
+- name: WebSite
+  displayName: 'Web Site Info'
+  type: boolean
+  default: false
+- name: StorageAccount
+  displayName: 'Storage Account Info'
+  type: boolean
+  default: false
+
+variables:
+  - group: ${{parameters.environment}}
+
+jobs:
+- template: Templates/keyvault.yaml
+  parameters:
+    azureSubscription: $(azureSubscription)
+    resourcegroup: ${{parameters.resourcegroup}}
+    storageAccountName: $(storageAccountName)
+    storageAccountAccessKey: $(storageAccountAccessKey)
+    storageContainerName: $(storageContainerName)
+    FullProcess: ${{parameters.FullProcess}}
+    KeyVault: ${{parameters.KeyVault}}
+
+- template: Templates/appserviceplan.yaml
+  parameters:
+    azureSubscription: $(azureSubscription)
+    resourcegroup: ${{parameters.resourcegroup}}
+    storageAccountName: $(storageAccountName)
+    storageAccountAccessKey: $(storageAccountAccessKey)
+    storageContainerName: $(storageContainerName)
+    FullProcess: ${{parameters.FullProcess}}
+    AppServicePlan: ${{parameters.AppServicePlan}}
+
+- template: Templates/functionapp.yaml
+  parameters:
+    azureSubscription: $(azureSubscription)
+    resourcegroup: ${{parameters.resourcegroup}}
+    storageAccountName: $(storageAccountName)
+    storageAccountAccessKey: $(storageAccountAccessKey)
+    storageContainerName: $(storageContainerName)
+    FullProcess: ${{parameters.FullProcess}}
+    FunctionApp: ${{parameters.FunctionApp}}
+
+- template: Templates/website.yaml
+  parameters:
+    azureSubscription: $(azureSubscription)
+    resourcegroup: ${{parameters.resourcegroup}}
+    storageAccountName: $(storageAccountName)
+    storageAccountAccessKey: $(storageAccountAccessKey)
+    storageContainerName: $(storageContainerName)
+    FullProcess: ${{parameters.FullProcess}}
+    WebSite: ${{parameters.WebSite}}
+
+- template: Templates/storageaccount.yaml
+  parameters:
+    azureSubscription: $(azureSubscription)
+    resourcegroup: ${{parameters.resourcegroup}}
+    storageAccountName: $(storageAccountName)
+    storageAccountAccessKey: $(storageAccountAccessKey)
+    storageContainerName: $(storageContainerName)
+    FullProcess: ${{parameters.FullProcess}}
+    StorageAccount: ${{parameters.StorageAccount}}

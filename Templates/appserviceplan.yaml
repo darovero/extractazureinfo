@@ -1,0 +1,88 @@
+parameters:
+- name: outputFileName
+  default: "appServiceplan.txt"
+- name: ContainerFolder
+  default: "appserviceplaninfo"
+- name: azureSubscription
+  type: string
+- name: resourcegroup
+  type: string
+- name: storageAccountName
+  type: string
+- name: storageAccountAccessKey
+  type: string
+- name: storageContainerName
+  type: string
+- name: FullProcess
+  type: boolean
+- name: AppServicePlan
+
+jobs:
+- job: GetAppServicePlanInfo
+  condition: ${{ or(eq(parameters.FullProcess, true), eq(parameters.AppServicePlan, true)) }}
+  steps:
+
+  - template: Modules/azurepowershell.yaml
+
+  - task: AzurePowerShell@5
+    displayName: 'Get App Service Plan Info'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      ScriptType: 'InlineScript'
+      Inline: |
+        $resourcegroup = "${{parameters.resourcegroup}}"
+        
+        # Get App Service Plan in Resource Group
+        $appServiceplan = Get-AzResource -ResourceGroupName $resourcegroup -ResourceType Microsoft.Web/serverFarms
+
+        # Initialize content variable
+        $ExportContent = ""
+
+        # Loop through each ASP
+        foreach ($asp in $appServiceplan) {
+            $aspName = $asp.Name
+
+            # Get Properties
+            $properties = Get-AzAppServicePlan -ResourceGroupName $resourcegroup -Name $aspName
+
+            # Tags
+            $tags = $properties.Tags
+
+            # Sku
+            $sku = $properties.sku
+
+            # Append information to ExportContent
+            $ExportContent += @"
+        App Service Plan: $aspName
+
+        Properties:
+        $($Properties | Select-Object WorkerTierName,Status,Subscription,HostingEnvironmentProfile,MaximumNumberOfWorkers,GeoRegion,PerSiteScaling,ElasticScaleEnabled,MaximumElasticWorkerCount,NumberOfSites,IsSpot,SpotExpirationTime,FreeOfferExpirationTime,ResourceGroup,Reserved,IsXenon,HyperV,TargetWorkerCount,TargetWorkerSizeId,ProvisioningState,KubeEnvironmentProfile,ExtendedLocation,Id,Name,Kind,Location | Format-List | Out-String -Width 4096)
+
+        Tags:
+        $($tags | Format-List | Out-String -Width 4096)
+               
+        Sku:
+        $($sku | Format-List | Out-String -Width 4096)        
+
+        "@
+        }
+
+        # Export the information to a text file
+        $ExportFilePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
+        $ExportContent | Out-File -FilePath $ExportFilePath -Encoding UTF8
+
+      azurePowerShellVersion: 'LatestVersion'
+
+  - task: AzurePowerShell@5
+    displayName: 'Upload File to Azure Blob Storage'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      ScriptType: 'InlineScript'
+      Inline: |
+        $filePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
+        $blobName = '${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}'
+
+        $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $(storageAccountAccessKey)
+        Set-AzStorageBlobContent -Context $storageContext -Container $(storageContainerName) -File $filePath -Blob $blobName -Force
+
+      azurePowerShellVersion: 'LatestVersion'
