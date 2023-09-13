@@ -1,31 +1,5 @@
 parameters:
 - name: outputFileName
-  default: "appServiceplan.txt"
-- name: ContainerFolder
-  default: "appserviceplaninfo"
-- name: azureSubscription
-  type: string
-- name: resourcegroup
-  type: string
-- name: storageAccountName
-  type: string
-- name: storageAccountAccessKey
-  type: string
-- name: storageContainerName
-  type: string
-- name: FullProcess
-  type: boolean
-- name: AppServicePlan
-
-jobs:
-- job: GetAppServicePlanInfo
-  condition: ${{ or(eq(parameters.FullProcess, true), eq(parameters.AppServicePlan, true)) }}
-  steps:
-
-  - template: Modules/azurepowershell.yaml
-
-parameters:
-- name: outputFileName
   default: "FunctionApp.txt"
 - name: ContainerFolder
   default: "functionappinfo"
