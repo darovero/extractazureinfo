@@ -33,7 +33,7 @@ foreach ($web in $website) {
 
     # Append information to ExportContent
     $ExportContent += @"
-Key Vault: $vaultName
+Web Site: $webName
 
 Properties:
 $($Properties | Select-Object -ExcludeProperty Tags,SiteConfig | Format-List | Out-String -Width 4096)

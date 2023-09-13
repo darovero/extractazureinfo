@@ -28,85 +28,14 @@ jobs:
     displayName: 'Get Storage Account Info'
     inputs:
       azureSubscription: $(azureSubscription)
-      ScriptType: 'InlineScript'
-      Inline: |
-        $resourcegroup = "${{parameters.resourcegroup}}"
-        
-        # Get Web Site in Resource Group
-        $stoacc = Get-AzResource -ResourceGroupName $resourcegroup -ResourceType Microsoft.Storage/storageAccounts
-
-        # Initialize content variable
-        $ExportContent = ""
-
-        # Loop through each Storage Account
-        foreach ($sto in $stoacc) {
-            $stoName = $sto.Name
-
-            # Get Properties
-            $properties = Get-AzStorageAccount -ResourceGroupName $resourcegroup -Name $stoName
-
-            # Tags
-            $tags = $properties.Tags
-
-            # Sku
-            $sku = $properties.Sku
-
-            # KeyCreationTime
-            $KeyCreationTime = $properties.KeyCreationTime
-
-            # PrimaryEndpoints
-            $PrimaryEndpoints = $properties.PrimaryEndpoints
-
-            # NetworkRuleSet
-            $NetworkRuleSet = $properties.NetworkRuleSet            
-
-            # Context
-            $Context = $properties.Context 
-            
-            # Append information to ExportContent
-            $ExportContent += @"
-        Storage Account: $stoName
-
-        Properties:
-        $($Properties | Select-Object -ExcludeProperty KeyCreationTime,Sku,Encryption,PrimaryEndpoints,Tags,NetworkRuleSet,Context,ExtendedProperties | Format-List | Out-String -Width 4096)
-
-        Tags:
-        $($tags | Format-List | Out-String -Width 4096)
-               
-        Sku:
-        $($Sku | Format-List | Out-String -Width 4096)        
-
-        KeyCreationTime:
-        $($KeyCreationTime | Format-List | Out-String -Width 4096)
-
-        PrimaryEndpoints:
-        $($PrimaryEndpoints | Format-List | Out-String -Width 4096)
-
-        NetworkRuleSet:
-        $($NetworkRuleSet | Format-List | Out-String -Width 4096)  
-
-        Context:
-        $($Context | Format-List | Out-String -Width 4096)        
-
-        "@
-        }
-
-        # Export the information to a text file
-        $ExportFilePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
-        $ExportContent | Out-File -FilePath $ExportFilePath -Encoding UTF8
-
-      azurePowerShellVersion: 'LatestVersion'
+      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/storage_account_info.ps1'
+      ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}"'
+      azurePowerShellVersion: LatestVersion
 
   - task: AzurePowerShell@5
     displayName: 'Upload File to Azure Blob Storage'
     inputs:
       azureSubscription: $(azureSubscription)
-      ScriptType: 'InlineScript'
-      Inline: |
-        $filePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
-        $blobName = '${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}'
-
-        $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $(storageAccountAccessKey)
-        Set-AzStorageBlobContent -Context $storageContext -Container $(storageContainerName) -File $filePath -Blob $blobName -Force
-
-      azurePowerShellVersion: 'LatestVersion'
+      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/upload_to_blob.ps1'
+      ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -storageContainerName "$(storageContainerName)" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -blobName "${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -outputFileName ${{parameters.outputFileName}} -storageAccountName "$(storageAccountName)" -storageAccountAccessKey "$(storageAccountAccessKey)"'
+      azurePowerShellVersion: LatestVersion
