@@ -38,6 +38,10 @@ parameters:
   displayName: 'Storage Account Info'
   type: boolean
   default: false
+- name: VirtualMachine
+  displayName: 'Virtual Machine Info'
+  type: boolean
+  default: false
 
 variables:
   - group: ${{parameters.environment}}
@@ -92,3 +96,13 @@ jobs:
     storageContainerName: $(storageContainerName)
     FullProcess: ${{parameters.FullProcess}}
     StorageAccount: ${{parameters.StorageAccount}}
+
+- template: Templates/virtualmachine.yaml
+  parameters:
+    azureSubscription: $(azureSubscription)
+    resourcegroup: ${{parameters.resourcegroup}}
+    storageAccountName: $(storageAccountName)
+    storageAccountAccessKey: $(storageAccountAccessKey)
+    storageContainerName: $(storageContainerName)
+    FullProcess: ${{parameters.FullProcess}}
+    StorageAccount: ${{parameters.VirtualMachine}}

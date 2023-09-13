@@ -1,0 +1,42 @@
+parameters:
+- name: outputFileName
+  default: "VirtualMachine.txt"
+- name: ContainerFolder
+  default: "virtaulmachineinfo"
+- name: azureSubscription
+  type: string
+- name: resourcegroup
+  type: string
+- name: storageAccountName
+  type: string
+- name: storageAccountAccessKey
+  type: string
+- name: storageContainerName
+  type: string
+- name: FullProcess
+  type: boolean
+- name: VirtualMachine
+
+jobs:
+- job: GetVirtualMachineInfo
+  condition: ${{ or(eq(parameters.FullProcess, true), eq(parameters.VirtualMachine, true)) }}
+  steps:
+
+  - template: Modules/azurepowershell.yaml
+
+  - task: AzurePowerShell@5
+    displayName: 'Get Virtual Machine Info'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/virtual_machine_info.ps1'
+      ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}"'
+      azurePowerShellVersion: LatestVersion
+
+  - task: AzurePowerShell@5
+    displayName: 'Upload File to Azure Blob Storage'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/upload_to_blob.ps1'
+      ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -storageContainerName "$(storageContainerName)" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -blobName "${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -outputFileName ${{parameters.outputFileName}} -storageAccountName "$(storageAccountName)" -storageAccountAccessKey "$(storageAccountAccessKey)"'
+      azurePowerShellVersion: LatestVersion
+
