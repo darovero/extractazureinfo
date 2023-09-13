@@ -1,8 +1,8 @@
 parameters:
 - name: outputFileName
-  default: "FunctionApp.txt"
+  default: "appServiceplan.txt"
 - name: ContainerFolder
-  default: "functionappinfo"
+  default: "appserviceplaninfo"
 - name: azureSubscription
   type: string
 - name: resourcegroup
@@ -15,95 +15,74 @@ parameters:
   type: string
 - name: FullProcess
   type: boolean
-- name: FunctionApp
+- name: AppServicePlan
 
 jobs:
-- job: GetFunctionAppInfo
-  condition: ${{ or(eq(parameters.FullProcess, true), eq(parameters.FunctionApp, true)) }}
+- job: GetAppServicePlanInfo
+  condition: ${{ or(eq(parameters.FullProcess, true), eq(parameters.AppServicePlan, true)) }}
   steps:
-    
-    - template: Modules/azurepowershell.yaml
 
-    - task: AzurePowerShell@5
-      displayName: 'Get Function App Info'
-      inputs:
-        azureSubscription: $(azureSubscription)
-        ScriptType: 'InlineScript'
-        Inline: |
-          $resourcegroup = "${{parameters.resourcegroup}}"
-          
-          # Get Function Apps in Resource Group
-          $FunctionApps = Get-AzResource -ResourceGroupName $resourcegroup -ResourceType Microsoft.Web/sites
+  - template: Modules/azurepowershell.yaml
 
-          # Initialize content variable
-          $ExportContent = ""
-
-          # Loop through each Key Vault
-          foreach ($functapp in $FunctionApps) {
-              $functappName = $functapp.Name
-
-              # Get Properties
-              $properties = Get-AzFunctionApp -ResourceGroupName $resourcegroup -Name $functappName
-              
-              # Get Application Settings
-              $applicationsettings = $properties.ApplicationSettings
-
-              # Get Site Config
-              $siteconfig = $properties.SiteConfig
-
-              # Get App Service Plan
-              $appserviceplan = Get-AzFunctionAppPlan -ResourceGroupName $resourcegroup
-
-          # Append information to ExportContent
-          $ExportContent += @"
-          Function Apps: $functappName
-
-          Properties: 
-          $($properties | Select-Object Name,Runtime,OSType,AppServicePlan,AvailabilityState,ClientCertEnabled,DefaultHostName,Enabled,EnabledHostName,HostName,HostNameSslState,HostNamesDisabled,HttpsOnly,HyperV,Id,Kind,LastModifiedTimeUtc,Location,MaxNumberOfWorker,OutboundIPAddress,PossibleOutboundIPAddress,RedundancyMode,RepositorySiteName,Reserved,ResourceGroup,ScmSiteAlsoStopped,ServerFarmId,State,Type,UsageState,Status,SubscriptionId  | Format-List | Out-String -Width 4096)
-
-          Application Settings:
-          $($applicationsettings | Format-List | Out-String -Width 4096)
-          
-          Site Config:
-          $($siteconfig | Format-List | Out-String -Width 4096)
-
-          App Service Plan
-          $($appserviceplan | Select-Object Name,WorkerType,Location,Id,MaximumElasticWorkerCount,MaximumNumberOfWorker,PerSiteScaling,ProvisioningState,Reserved,ResourceGroup,SkuName,SkuSize,SkuTier,Status,Subscription,Type | Out-String -Width 4096)
-
-          "@
-          }
-
-          # Export the information to a text file
-          $ExportFilePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
-          $ExportContent | Out-File -FilePath $ExportFilePath -Encoding UTF8
-
-        azurePowerShellVersion: 'LatestVersion'
+  - task: AzurePowerShell@5
+    displayName: 'Get App Service Plan Info'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      ScriptType: 'InlineScript'
+      Inline: |
+        $resourcegroup = "${{parameters.resourcegroup}}"
         
-    - task: AzurePowerShell@5
-      displayName: 'Upload File to Azure Blob Storage'
-      inputs:
-        azureSubscription: $(azureSubscription)
-        ScriptType: 'InlineScript'
-        Inline: |
-          $filePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
-          $blobName = '${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}'
+        # Get App Service Plan in Resource Group
+        $appServiceplan = Get-AzResource -ResourceGroupName $resourcegroup -ResourceType Microsoft.Web/serverFarms
 
-          $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $(storageAccountAccessKey)
-          Set-AzStorageBlobContent -Context $storageContext -Container $(storageContainerName) -File $filePath -Blob $blobName -Force
+        # Initialize content variable
+        $ExportContent = ""
 
-        azurePowerShellVersion: 'LatestVersion'
-  # - task: AzurePowerShell@5
-  #   displayName: 'Get App Service Plan Info'
-  #   inputs:
-  #     azureSubscription: $(azureSubscription)
-  #     ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/app_service_plan_info.ps1'
-  #     ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}"'
-  #     azurePowerShellVersion: LatestVersion
+        # Loop through each ASP
+        foreach ($asp in $appServiceplan) {
+            $aspName = $asp.Name
 
-  # - task: AzurePowerShell@5
-  #   displayName: 'Upload File to Azure Blob Storage'
-  #   inputs:
-  #     azureSubscription: $(azureSubscription)
-  #     ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/upload_to_blob.ps1'
-  #     ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -storageContainerName "$(storageContainerName)" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -blobName "${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -outputFileName ${{parameters.outputFileName}} -storageAccountName "$(storageAccountName)" -storageAccountAccessKey "$(storageAccountAccessKey)"'
-  #     azurePowerShellVersion: LatestVersion
+            # Get Properties
+            $properties = Get-AzAppServicePlan -ResourceGroupName $resourcegroup -Name $aspName
+
+            # Tags
+            $tags = $properties.Tags
+
+            # Sku
+            $sku = $properties.sku
+
+            # Append information to ExportContent
+            $ExportContent += @"
+        App Service Plan: $aspName
+
+        Properties:
+        $($Properties | Select-Object WorkerTierName,Status,Subscription,HostingEnvironmentProfile,MaximumNumberOfWorkers,GeoRegion,PerSiteScaling,ElasticScaleEnabled,MaximumElasticWorkerCount,NumberOfSites,IsSpot,SpotExpirationTime,FreeOfferExpirationTime,ResourceGroup,Reserved,IsXenon,HyperV,TargetWorkerCount,TargetWorkerSizeId,ProvisioningState,KubeEnvironmentProfile,ExtendedLocation,Id,Name,Kind,Location | Format-List | Out-String -Width 4096)
+
+        Tags:
+        $($tags | Format-List | Out-String -Width 4096)
+               
+        Sku:
+        $($sku | Format-List | Out-String -Width 4096)        
+
+        "@
+        }
+
+        # Export the information to a text file
+        $ExportFilePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
+        $ExportContent | Out-File -FilePath $ExportFilePath -Encoding UTF8
+
+      azurePowerShellVersion: 'LatestVersion'
+
+  - task: AzurePowerShell@5
+    displayName: 'Upload File to Azure Blob Storage'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      ScriptType: 'InlineScript'
+      Inline: |
+        $filePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
+        $blobName = '${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}'
+
+        $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $(storageAccountAccessKey)
+        Set-AzStorageBlobContent -Context $storageContext -Container $(storageContainerName) -File $filePath -Blob $blobName -Force
+
+      azurePowerShellVersion: 'LatestVersion'
