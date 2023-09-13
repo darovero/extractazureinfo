@@ -118,7 +118,7 @@ jobs:
           Set-AzStorageBlobContent -Context $storageContext -Container $(storageContainerName) -File $filePath -Blob $blobName -Force
 
         azurePowerShellVersion: 'LatestVersion'
-  - task: AzurePowerShell@5
+  # - task: AzurePowerShell@5
   #   displayName: 'Get App Service Plan Info'
   #   inputs:
   #     azureSubscription: $(azureSubscription)
