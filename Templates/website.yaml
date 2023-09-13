@@ -30,7 +30,7 @@ jobs:
     displayName: 'Get Web Site Info'
     inputs:
       azureSubscription: $(azureSubscription)
-      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/key_vault_info.ps1'
+      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/web_site_info.ps1'
       ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}"'
       azurePowerShellVersion: LatestVersion
 
