@@ -95,10 +95,10 @@ jobs:
 
   #     azurePowerShellVersion: 'LatestVersion'
 
-    - task: AzurePowerShell@5
-      displayName: 'Upload File to Azure Blob Storage'
-      inputs:
-        azureSubscription: $(azureSubscription)
-        ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/upload_to_blob.ps1'
-        ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -storageContainerName "$(storageContainerName)" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -blobName "${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -outputFileName ${{parameters.outputFileName}} -storageAccountName "$(storageAccountName)" -storageAccountAccessKey "$(storageAccountAccessKey)"'
-        azurePowerShellVersion: LatestVersion
+  - task: AzurePowerShell@5
+    displayName: 'Upload File to Azure Blob Storage'
+    inputs:
+      azureSubscription: $(azureSubscription)
+      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/upload_to_blob.ps1'
+      ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -storageContainerName "$(storageContainerName)" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -blobName "${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -outputFileName ${{parameters.outputFileName}} -storageAccountName "$(storageAccountName)" -storageAccountAccessKey "$(storageAccountAccessKey)"'
+      azurePowerShellVersion: LatestVersion
