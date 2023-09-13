@@ -28,22 +28,14 @@ jobs:
     displayName: 'Get App Service Plan Info'
     inputs:
       azureSubscription: $(azureSubscription)
-      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/key_vault_info.ps1'
+      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/app_service_plan_info.ps1'
       ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}"'
       azurePowerShellVersion: LatestVersion
-        
-       
 
   - task: AzurePowerShell@5
     displayName: 'Upload File to Azure Blob Storage'
     inputs:
       azureSubscription: $(azureSubscription)
-      ScriptType: 'InlineScript'
-      Inline: |
-        $filePath = "$(Agent.BuildDirectory)/${{parameters.resourcegroup}}_${{parameters.outputFileName}}"
-        $blobName = '${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}'
-
-        $storageContext = New-AzStorageContext -StorageAccountName $(storageAccountName) -StorageAccountKey $(storageAccountAccessKey)
-        Set-AzStorageBlobContent -Context $storageContext -Container $(storageContainerName) -File $filePath -Blob $blobName -Force
-
-      azurePowerShellVersion: 'LatestVersion'
+      ScriptPath: '$(Build.SourcesDirectory)/Templates/Scripts/upload_to_blob.ps1'
+      ScriptArguments: '-resourceGroup "${{parameters.resourcegroup}}" -storageContainerName "$(storageContainerName)" -outputFilePath "${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -blobName "${{parameters.ContainerFolder}}/${{parameters.resourcegroup}}_${{parameters.outputFileName}}" -outputFileName ${{parameters.outputFileName}} -storageAccountName "$(storageAccountName)" -storageAccountAccessKey "$(storageAccountAccessKey)"'
+      azurePowerShellVersion: LatestVersion
