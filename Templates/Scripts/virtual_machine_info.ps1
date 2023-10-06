@@ -14,19 +14,19 @@ foreach ($vms in $virtualMachines) {
     $vmsName = $vms.Name
 
     # Get Properties
-    $properties = Get-VM -Name $vmsName
+    $properties = Get-AzVM -Name $vmsName
 
     # Tags
     $tags = $properties.Tags
 
-    # Access Policies
-    $accessPolicies = $properties.AccessPolicies
+    # Diagnostics Profile
+    $diagnosticsprofile = $properties.DiagnosticsProfile.BootDiagnostics
 
-    # Certificates
-    $certificates = Get-AzKeyVaultCertificate -VaultName $vmsName
+    # Hardware Profile
+    $hardwareprofile = $properties.HardwareProfile
 
-    # Secrets
-    $secrets = Get-AzKeyVaultSecret -VaultName $vaultName
+    # Network Profile
+    $networkprofile = $properties.NetworkProfile
 
     # Keys
     $keys = Get-AzKeyVaultKey -VaultName $vaultName
@@ -41,14 +41,14 @@ $($Properties | Select-Object -ExcludeProperty Tags,DiagnosticsProfile,HardwareP
 Tags:
 $($tags | Format-List | Out-String -Width 4096)
        
-Access Policies:
-$($accessPolicies | Select-Object TenantID,ObjectID,ApplicationID,DisplayName,@{n="PermissionsToKeys";e={$_.PermissionsToKeys -join ","}},@{n="PermissionsToKeysStr";e={$_.PermissionsToKeysStr -join ","}},@{n="PermissionsToSecrets";e={$_.PermissionsToSecrets -join ","}},@{n="PermissionsToSecretsStr";e={$_.PermissionsToSecretsStr -join ","}},@{n="PermissionsToCertificates";e={$_.PermissionsToCertificates -join ","}},@{n="PermissionsToCertificatesStr";e={$_.PermissionsToCertificatesStr -join ","}},@{n="PermissionsToStorage";e={$_.PermissionsToStorage -join ","}},@{n="PermissionsToStorageStr";e={$_.PermissionsToStorageStr -join ","}} | Format-List | Out-String -Width 4096)
+Diagnostics Profile:
+ $($diagnosticsprofile | Select-Object | Format-List | Out-String -Width 4096)
 
-Certificates:
-$($certificates | Select-Object VaultName,Name,Id,Created,Updated,NotBefore,Expires | Format-List | Out-String -Width 4096)
+Hardware Profile:
+$($hardwareprofile | Select-Object VaultName,Name,Id,Created,Updated,NotBefore,Expires | Format-List | Out-String -Width 4096)
 
-Secrets:
-$($secrets | Select-Object VaultName,Name,Id,Created,Updated | Format-List | Out-String -Width 4096)
+Network Profile:
+$($networkprofile | Select-Object VaultName,Name,Id,Created,Updated | Format-List | Out-String -Width 4096)
 
 Keys:
 $($keys | Select-Object VaultName,Name,KeyType,KeySize,Version,Id,Enabled,Created,Updated,NotBefore,Expires,RecoveryLevel,ReleasePolicy | Format-List | Out-String -Width 4096)
