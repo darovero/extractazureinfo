@@ -105,4 +105,4 @@ jobs:
     storageAccountAccessKey: $(storageAccountAccessKey)
     storageContainerName: $(storageContainerName)
     FullProcess: ${{parameters.FullProcess}}
-    StorageAccount: ${{parameters.VirtualMachine}}
+    VirtualMachine: ${{parameters.VirtualMachine}}
