@@ -62,67 +62,67 @@ stages:
 
 - stage: App_Service_Plan_Info
   displayName: Get SP Info
-    jobs:
-      - template: Templates/appserviceplan.yaml
-        parameters:
-          azureSubscription: $(azureSubscription)
-          resourcegroup: ${{parameters.resourcegroup}}
-          storageAccountName: $(storageAccountName)
-          storageAccountAccessKey: $(storageAccountAccessKey)
-          storageContainerName: $(storageContainerName)
-          FullProcess: ${{parameters.FullProcess}}
-          AppServicePlan: ${{parameters.AppServicePlan}}
+  jobs:
+    - template: Templates/appserviceplan.yaml
+      parameters:
+        azureSubscription: $(azureSubscription)
+        resourcegroup: ${{parameters.resourcegroup}}
+        storageAccountName: $(storageAccountName)
+        storageAccountAccessKey: $(storageAccountAccessKey)
+        storageContainerName: $(storageContainerName)
+        FullProcess: ${{parameters.FullProcess}}
+        AppServicePlan: ${{parameters.AppServicePlan}}
 
 - stage: Function_App_Info
   displayName: Get FA Info
-    jobs:
-      - template: Templates/functionapp.yaml
-        parameters:
-          azureSubscription: $(azureSubscription)
-          resourcegroup: ${{parameters.resourcegroup}}
-          storageAccountName: $(storageAccountName)
-          storageAccountAccessKey: $(storageAccountAccessKey)
-          storageContainerName: $(storageContainerName)
-          FullProcess: ${{parameters.FullProcess}}
-          FunctionApp: ${{parameters.FunctionApp}}
+  jobs:
+    - template: Templates/functionapp.yaml
+      parameters:
+        azureSubscription: $(azureSubscription)
+        resourcegroup: ${{parameters.resourcegroup}}
+        storageAccountName: $(storageAccountName)
+        storageAccountAccessKey: $(storageAccountAccessKey)
+        storageContainerName: $(storageContainerName)
+        FullProcess: ${{parameters.FullProcess}}
+        FunctionApp: ${{parameters.FunctionApp}}
 
 - stage: WebApp_Info
   displayName: Get WA Info
-    jobs:
-      - template: Templates/website.yaml
-        parameters:
-          azureSubscription: $(azureSubscription)
-          resourcegroup: ${{parameters.resourcegroup}}
-          storageAccountName: $(storageAccountName)
-          storageAccountAccessKey: $(storageAccountAccessKey)
-          storageContainerName: $(storageContainerName)
-          FullProcess: ${{parameters.FullProcess}}
-          WebSite: ${{parameters.WebSite}}
+  jobs:
+    - template: Templates/website.yaml
+      parameters:
+        azureSubscription: $(azureSubscription)
+        resourcegroup: ${{parameters.resourcegroup}}
+        storageAccountName: $(storageAccountName)
+        storageAccountAccessKey: $(storageAccountAccessKey)
+        storageContainerName: $(storageContainerName)
+        FullProcess: ${{parameters.FullProcess}}
+        WebSite: ${{parameters.WebSite}}
 
 - stage: Storage_Account_Info
   displayName: Get SA Info
-    jobs:
-      - template: Templates/storageaccount.yaml
-        parameters:
-          azureSubscription: $(azureSubscription)
-          resourcegroup: ${{parameters.resourcegroup}}
-          storageAccountName: $(storageAccountName)
-          storageAccountAccessKey: $(storageAccountAccessKey)
-          storageContainerName: $(storageContainerName)
-          FullProcess: ${{parameters.FullProcess}}
-          StorageAccount: ${{parameters.StorageAccount}}
+  jobs:
+    - template: Templates/storageaccount.yaml
+      parameters:
+        azureSubscription: $(azureSubscription)
+        resourcegroup: ${{parameters.resourcegroup}}
+        storageAccountName: $(storageAccountName)
+        storageAccountAccessKey: $(storageAccountAccessKey)
+        storageContainerName: $(storageContainerName)
+        FullProcess: ${{parameters.FullProcess}}
+        StorageAccount: ${{parameters.StorageAccount}}
 
 - stage: Virtual_Machine_Info
   displayName: Get VM Info
   dependsOn:
   - Storage_Account_Info
     jobs:
-- template: Templates/virtualmachine.yaml
-  parameters:
-    azureSubscription: $(azureSubscription)
-    resourcegroup: ${{parameters.resourcegroup}}
-    storageAccountName: $(storageAccountName)
-    storageAccountAccessKey: $(storageAccountAccessKey)
-    storageContainerName: $(storageContainerName)
-    FullProcess: ${{parameters.FullProcess}}
-    VirtualMachine: ${{parameters.VirtualMachine}}
+    - template: Templates/virtualmachine.yaml
+      parameters:
+        azureSubscription: $(azureSubscription)
+        resourcegroup: ${{parameters.resourcegroup}}
+        storageAccountName: $(storageAccountName)
+        storageAccountAccessKey: $(storageAccountAccessKey)
+        storageContainerName: $(storageContainerName)
+        FullProcess: ${{parameters.FullProcess}}
+        VirtualMachine: ${{parameters.VirtualMachine}}
