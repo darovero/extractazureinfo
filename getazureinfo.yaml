@@ -49,16 +49,16 @@ variables:
 stages:
 - stage : Key_Vault_Info
   displayName: Get KV Info
-    jobs:
-      - template: Templates/keyvault.yaml
-        parameters:
-          azureSubscription: $(azureSubscription)
-          resourcegroup: ${{parameters.resourcegroup}}
-          storageAccountName: $(storageAccountName)
-          storageAccountAccessKey: $(storageAccountAccessKey)
-          storageContainerName: $(storageContainerName)
-          FullProcess: ${{parameters.FullProcess}}
-          KeyVault: ${{parameters.KeyVault}}
+  jobs:
+    - template: Templates/keyvault.yaml
+      parameters:
+        azureSubscription: $(azureSubscription)
+        resourcegroup: ${{parameters.resourcegroup}}
+        storageAccountName: $(storageAccountName)
+        storageAccountAccessKey: $(storageAccountAccessKey)
+        storageContainerName: $(storageContainerName)
+        FullProcess: ${{parameters.FullProcess}}
+        KeyVault: ${{parameters.KeyVault}}
 
 - stage: App_Service_Plan_Info
   displayName: Get SP Info
